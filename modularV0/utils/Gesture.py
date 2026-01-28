@@ -10,4 +10,4 @@ class Gesture:
     INDEX_UP    ="index_up"
     Pinch="pinch"
 
-    # اضافه کنید گِیِست‌های خودتان
+

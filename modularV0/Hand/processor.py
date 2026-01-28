@@ -189,7 +189,7 @@ class HandProcessor():
         #--- محاسبه فاصله هر انگشت
         for i, name_i in enumerate(FINGER_NAMES):
             for j, name_j in enumerate(FINGER_NAMES):
-                # فقط یکبار (یا i < j) محاسبه کنید تا تکرار (symmetry) نداشته باشید
+                # نرمال سازی هم اوی این حلقس
                 if i < j:
                     pt_i = pts[TIP_IDX[i]]
                     pt_j = pts[TIP_IDX[j]]
@@ -205,7 +205,7 @@ class HandProcessor():
         finger_status={}
         # for name,theta in angs :
         for i, name in enumerate(FINGER_NAMES):
-            threshold = FOLD_THRESHOLD.get(name, 40)  # اگر نام وجود نداشت، به ۳۰ برگرد
+            threshold = FOLD_THRESHOLD.get(name, 70)
             finger_status[name] = 'Folded' if angs[name] <= threshold else 'Extended'
         return finger_status
     def Wrist_angel(self,hand_landmarks,frame):
@@ -217,7 +217,7 @@ class HandProcessor():
             p_l = pts[2]
             p_r = pts[17]
 
-            # 2. زاویه‌ی انگشت
+            #  زاویه‌ی انگشت
             theta = angle_between_lines(p_l,p_r,[0,0],[0,100])
             Wrist_ang = round(theta, 1)
             return Wrist_ang

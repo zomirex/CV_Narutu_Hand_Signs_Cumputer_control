@@ -15,19 +15,19 @@ class GestureModel:
         ورودی: dict: 'thumb', 'index', ... => درصد بسته
         خروجی: نام گِیِست (یا 'unknown')
         """
-        # گِیِست “باز” (تمام انگشتان باز)
+
         if all(v =="Extended" for v in Finger_status.values()):
             return "open_palm"
 
-        # گِیِست “فیس” (تمام انگشتان بسته)
+
         if all(v =="Folded" for v in Finger_status.values()):
             return "fist"
 
-        # گِیِست “Thumbs Up”
+
         if Finger_status["Thumb"] =="Extended" and all(v =="Folded" for k, v in Finger_status.items() if k != "Thumb"):
             return "thumbs_up"
 
-        # گِیِست “Thumbs Down” (thumb بسته و انگشتان باز)
+
         if Finger_status["Thumb"] =="Folded" and all(v =="Folded" for k, v in Finger_status.items() if k != "Thumb"):
             return
 

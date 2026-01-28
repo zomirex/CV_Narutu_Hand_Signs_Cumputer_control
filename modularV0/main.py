@@ -62,7 +62,7 @@ def main():
                 executor.execute(gesture)
                 last_gesture[handedness] = gesture
 
-            # نمایش درصدها
+            # نمایش درجه ها برای هر دست ارنج رو باید اضاف کنم
             if handedness =="Left":
                 y0, dy = 30, 20
             else:
