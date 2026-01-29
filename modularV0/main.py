@@ -27,7 +27,7 @@ def main():
     )
     processor = HandProcessor()
     model = GestureModel(threshold=30)
-    executor = GestureExecutor(command_map=GESTURE_COMMANDS)
+    executor = GestureExecutor()
 
     last_gesture = {"Left": None, "Right": None}
 
@@ -55,8 +55,7 @@ def main():
             # print(gesture)
             c=processor.Wrist_angel(lm,frame)
             print(c)
-            if gesture == "fist":
-                pyautogui.press("space")
+
              # جلوگیری از فراخوانی مکرر همان دستور
             if gesture != last_gesture[handedness]:
                 executor.execute(gesture)
