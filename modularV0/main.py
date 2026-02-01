@@ -14,8 +14,8 @@ def main():
     P_P_T_distances = {}
     hand_angles = {}
     finger_status = {}
-
-
+    hand_gesture={}
+    hand_wrist_ang={}
     cap = cv2.VideoCapture(CAMERA_ID)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
@@ -45,21 +45,19 @@ def main():
             handedness = hand["handedness"]  # 'Left' یا 'Right'
             # print(handedness)
             # print(lm[0])
-            ang=processor.Angele_Calculator(lm,frame)
-            processor.Distance_norm_Calculator(lm,frame)
+            hand_angles[handedness]= ang=processor.Angele_Calculator(lm,frame)
+            P_P_T_distances[handedness]=processor.Distance_norm_Calculator(lm,frame)
             # print(x)
-            stat=processor.Finger_Status(ang)
+            finger_status[handedness]=stat=processor.Finger_Status(ang)
             # print(y)
 
-            gesture = model.classify(stat,ang)
-            # print(gesture)
-            c=processor.Wrist_angel(lm,frame)
-            print(c)
+            hand_gesture[handedness] = gesture = model.classify(stat,ang)
+            print(hand_gesture)
+            hand_wrist_ang = c = processor.Wrist_angel(lm,frame)
+            # print(c)
 
              # جلوگیری از فراخوانی مکرر همان دستور
-            if gesture != last_gesture[handedness]:
-                executor.execute(gesture)
-                last_gesture[handedness] = gesture
+
 
             # نمایش درجه ها برای هر دست ارنج رو باید اضاف کنم
             if handedness =="Left":
@@ -79,6 +77,10 @@ def main():
                     cv2.putText(frame, f"{handedness} Hand: {gesture}",
                                 (400, 100), cv2.FONT_HERSHEY_SIMPLEX,
                                 0.6, (0, 0, 0), 2)
+        if hand_gesture.get('Right') and hand_gesture.get('Left'):
+            if (hand_gesture['Right'] != last_gesture['Right']) and hand_gesture['Left']=='fist':
+                executor.execute( hand_gesture.get('Right'))
+                last_gesture['Right'] = hand_gesture.get('Right')
 
 
         cv2.imshow("Hand Motion Detector", frame)
