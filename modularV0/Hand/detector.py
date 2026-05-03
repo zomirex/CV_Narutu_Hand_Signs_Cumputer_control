@@ -6,7 +6,7 @@ class HandDetector:
     """
     تشخیص دست، استخراج نقاط کلیدی (landmarks) و تشخیص طرف (left/right).
     """
-
+# i must make these initial variable configurable in app
     def __init__(self, max_hands=2,
                  detection_conf=0.5,
                  tracking_conf=0.5):

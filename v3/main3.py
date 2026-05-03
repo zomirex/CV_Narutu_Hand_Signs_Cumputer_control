@@ -2,11 +2,12 @@
 #   نصب پیش‌نیازها
 # ---------------------------------------------
 # pip install mediapipe opencv-python numpy
-
+import scipy
 import cv2
 import mediapipe as mp
 import numpy as np
 import math
+
 
 # ---------------------------------------------
 #   تنظیمات MediaPipe

@@ -32,3 +32,18 @@ def handle_lclick(pressed,x,y,buttonn):
     except Exception as e:
         print(f"Error: {e}")
 
+class GestureExecutor:
+    def __init__(self, command_map=None):
+        # اگر کاربر مقداری داد یا پیش‌فرض را گرفت
+        raw_map = command_map or Hardware_Commands
+
+        # تبدیل تمام مقادیر به callable
+        self.command_map = {}
+        for k, v in raw_map.items():
+            if callable(v):
+                self.command_map[k] = v
+            elif isinstance(v, str):
+                # فرض می‌کنیم رشته همان نام کلید است
+                self.command_map[k] = lambda key=v: pyautogui.press(key)
+            else:
+                raise ValueError(f"Unsupported command for {k!r}: {type(v)}")
