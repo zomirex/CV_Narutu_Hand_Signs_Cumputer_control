@@ -7,6 +7,8 @@ import mediapipe as mp
 import numpy as np
 import math
 from typing import Tuple
+from modularV0.utils.Config_Loader import load_config
+
 # ---------------------------------------------
 #   تنظیمات MediaPipe
 # ---------------------------------------------
@@ -23,13 +25,7 @@ TIP_IDX = [4, 8, 12, 16, 20]  # Tip برای هر انگشت
 BASE_IDX = [0]               # wrist (landmark 0)
 
 # آستانه‌ی زاویه برای هر انگشت (به درجه)   باید به app اضافه شه
-FOLD_THRESHOLD = {
-    'Thumb' : 100,   # مثال: انگشت کوچک‌تر را ممکن است کمتر ببینید
-    'Index' : 40,
-    'Middle': 40,
-    'Ring'  : 40,
-    'Pinky' : 40
-}
+FOLD_THRESHOLD = load_config("x.json").FOLD_THRESHOLD
 Point = Tuple[float, float]
 
 # توابع کمکی
@@ -47,7 +43,6 @@ def angle_between_lines(
         Two distinct points defining the second line.
     in_degrees : bool, default True
         If True, return the angle in degrees; otherwise return radians.
-
     Returns
     -------
     float
@@ -112,8 +107,8 @@ def point_line_distance(p, a, b):
     ab = b - a
     ap = p - a
 
-    # مقدار انتزاعی حاصل‌ضرب کراس
-    cross_val = np.abs(np.cross(ab, ap))          # در 2D  np.cross برمی‌گرداند اسکالر
+
+    cross_val = np.abs(np.cross(ab, ap))
     denom      = np.linalg.norm(ab)
 
     if denom == 0:  # اگر a==b
@@ -124,6 +119,9 @@ class HandProcessor():
     def __init__(self, fold_thr=FOLD_THRESHOLD, wrist_idx=BASE_IDX):
         self.fold_thr = fold_thr
         self.wrist_idx = wrist_idx
+
+    def Config(self,Config):
+        self.fold_thr=Config.FOLD_THRESHOLD
     def Angele_Calculator(self,hand_landmarks,frame):
         hand_angles={}
         h, w, _ = frame.shape
@@ -205,8 +203,10 @@ class HandProcessor():
         finger_status={}
         # for name,theta in angs :
         for i, name in enumerate(FINGER_NAMES):
-            threshold = FOLD_THRESHOLD.get(name, 70)
+            threshold = self.fold_thr.get(name, 70)
             finger_status[name] = 'Folded' if angs[name] <= threshold else 'Extended'
+        # print(load_config("x.json").FOLD_THRESHOLD)
+        # print(self.fold_thr)
         return finger_status
     def Wrist_angel(self,hand_landmarks,frame):
             hand_angles = {}

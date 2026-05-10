@@ -8,8 +8,8 @@ class HandDetector:
     """
 # i must make these initial variable configurable in app
     def __init__(self, max_hands=2,
-                 detection_conf=0.5,
-                 tracking_conf=0.5):
+                 detection_conf=0.7,
+                 tracking_conf=0.7):
         self.max_hands = max_hands
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(
@@ -18,12 +18,20 @@ class HandDetector:
             min_tracking_confidence=tracking_conf,
         )
         self.mp_draw = mp.solutions.drawing_utils
-
+    def Config(self,Config):
+        self.max_hands = Config.max_hands
+        self.mp_hands = mp.solutions.hands
+        self.mp_hands.Hands(
+            max_num_hands=Config.max_hands,
+            min_detection_confidence=Config.detection_conf,
+            min_tracking_confidence=Config.tracking_conf,
+        )
     def process(self, frame):
         """
         ورودی: تصویر BGR (OpenCV)
         خروجی: (فریم) + لیست دست‌ها و نقاط کلیدی
         """
+        # print(self.max_hands)
         img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = self.hands.process(img_rgb)
 

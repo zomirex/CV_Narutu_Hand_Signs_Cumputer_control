@@ -19,3 +19,33 @@ GESTURE_COMMANDS = {
     "fist": "stop",                    # متوقف کردن
     # اضافه کنید گِیِست‌های خودتان
 }
+# config.py
+from dataclasses import dataclass, field
+from typing import Dict
+
+@dataclass
+class Configurations:
+    # دسترسی‌ها
+    max_hands: int = 2
+    detection_conf: float = 0.7
+    tracking_conf: float = 0.7
+    CAMERA_ID: int = 0                
+    FRAME_WIDTH: int = 640
+    FRAME_HEIGHT: int = 480
+
+    # پارامترهای دقت (در صورت تمایل می‌توانید از 2 مجموعه استفاده کنید)
+    DETECTION_CONFIDENCE: float = 0.4
+    TRACKING_CONFIDENCE: float = 0.4
+
+    # آستانه‌ی تشخیص انگشت (مقدار به میلی‌متر)
+    FOLD_THRESHOLD: Dict[str, int] = field(
+        default_factory=lambda: {
+            'Thumb': 100,
+            'Index': 40,
+            'Middle': 40,
+            'Ring': 40,
+            'Pinky': 40,
+        }
+    )
+
+    theme: str = "dark"      # dark / light

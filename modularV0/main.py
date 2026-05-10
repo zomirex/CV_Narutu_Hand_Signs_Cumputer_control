@@ -1,13 +1,13 @@
 
 
 import cv2
-import pyautogui
 
 from modularV0.Hand.detector import HandDetector
 from modularV0.Hand.processor import HandProcessor
 from modularV0.Hand.model import GestureModel
 from modularV0.Hand.excuter import GestureExecutor
-from modularV0.Config import CAMERA_ID, FRAME_WIDTH, FRAME_HEIGHT, DETECTION_CONFIDENCE, TRACKING_CONFIDENCE, GESTURE_COMMANDS
+from modularV0.utils.Configurations import CAMERA_ID, FRAME_WIDTH, FRAME_HEIGHT, DETECTION_CONFIDENCE, TRACKING_CONFIDENCE
+
 
 def main():
     #main attributes

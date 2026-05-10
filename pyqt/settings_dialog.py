@@ -26,17 +26,17 @@ class SettingsDialog(QDialog):
         # 1️⃣ فیلدهای عددی اولیه
         self.max_hands_sb = QSpinBox()
         self.max_hands_sb.setRange(1, 10)
-        self.max_hands_sb.setValue(current_settings.get("max_hands", 2))
+        self.max_hands_sb.setValue(current_settings.max_hands)
 
         self.det_conf_sb = QDoubleSpinBox()
         self.det_conf_sb.setRange(0.0, 1.0)
         self.det_conf_sb.setSingleStep(0.05)
-        self.det_conf_sb.setValue(current_settings.get("detection_conf", 0.5))
+        self.det_conf_sb.setValue(current_settings.detection_conf)
 
         self.track_conf_sb = QDoubleSpinBox()
         self.track_conf_sb.setRange(0.0, 1.0)
         self.track_conf_sb.setSingleStep(0.05)
-        self.track_conf_sb.setValue(current_settings.get("tracking_conf", 0.5))
+        self.track_conf_sb.setValue(current_settings.tracking_conf)
 
         # 2️⃣ جدول thresholds (Finger | Threshold)
         self.table = QTableWidget()
@@ -48,7 +48,7 @@ class SettingsDialog(QDialog):
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        self.load_thresholds(current_settings.get("FOLD_THRESHOLD", {}))
+        self.load_thresholds(current_settings.FOLD_THRESHOLD)
 
         # 3️⃣ دکمه‌های ذخیره/لغو
         ok_btn = QPushButton("ذخیره")

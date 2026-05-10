@@ -9,12 +9,16 @@ class GestureModel:
         threshold: درصد بسته برای انگشتان
         """
         self.threshold = threshold
+        self.Touch=0.5
 
-    def classify(self, Finger_status,Finger_ang):
+    def classify(self, Finger_status,Finger_ang,Finger_Dist):
         """
         ورودی: dict: 'thumb', 'index', ... => درصد بسته
         خروجی: نام گِیِست (یا 'unknown')
         """
+
+        if Finger_status["Index"] == "Extended" and Finger_status["Thumb"] == "Extended" and Finger_Dist[('Thumb', 'Index')]<self.Touch :
+            return "pinch"
 
         if all(v =="Extended" for v in Finger_status.values()):
             return "open_palm"
@@ -42,11 +46,7 @@ class GestureModel:
                 Finger_status["Thumb"] =="Extended" :
             return "spiderman"
 
-        if (Finger_status["Index"] == "Extended" and
-                Finger_status["Thumb"] == "Extended" and
-                all(v == "Folded" for k, v in Finger_status.items()
-                    if k != "Index" and k != "Thumb")):
-            return "pinch"
+
 
         if (Finger_status["Ring"] == "Folded" and
                 Finger_status["Pinky"] == "Folded" and

@@ -3,9 +3,9 @@ import mediapipe as mp
 import numpy as np
 import pyautogui
 import time
-import screen_brightness_control as sbc  # ✅ کتابخانه جدید
+import screen_brightness_control as sbc
 
-# --- صدا (فقط ویندوز) ---
+# --- صدا ---
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from comtypes import CLSCTX_ALL
 from ctypes import cast, POINTER
@@ -53,7 +53,7 @@ exit_counter = 0
 CONFIRM_FRAMES = 2
 DISTANCE_THRESHOLD = 0.06
 
-# --- توابع کمکی ---
+# توابع برای کمک کردن توی محاسبات
 def euclidean_distance(p1, p2):
     return np.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
 
@@ -70,12 +70,8 @@ def is_fist(hand_landmarks):
             return False
     return True
 
-# --- شروع ---
+# نمایش
 cap = cv2.VideoCapture(0)
-print("✅ سیستم کنترل دست فعال شد!")
-print("- دست راست مشت → نور مانیتور")
-print("- دست چپ مشت → صدا")
-print("- شست+اشاره چسبیده → Alt+Tab")
 
 while cap.isOpened():
     success, image = cap.read()
@@ -90,11 +86,13 @@ while cap.isOpened():
 
     if results.multi_hand_landmarks:
         hand_landmarks = results.multi_hand_landmarks[0]
+        print(hand_landmarks.landmark[0])
+
         mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
         current_hand_x = hand_landmarks.landmark[0].x
         cx_norm = current_hand_x
         label = "Right" if cx_norm < 0.5 else "Left"
-
+        print(cx_norm)
         # --- Alt+Tab ---
         thumb_tip = hand_landmarks.landmark[4]
         index_tip = hand_landmarks.landmark[8]
@@ -156,7 +154,6 @@ while cap.isOpened():
 
                 else:
                     prev_left_x = cx_norm
-
         # --- Alt+Tab حرکت ---
         else:
             if prev_hand_x is not None:
