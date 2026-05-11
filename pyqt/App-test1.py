@@ -1,17 +1,26 @@
-# main.py
+"""
+مدارک اصلی برنامه‌ی تشخیص دست و Gesture
+در این فایل تمام ویجت‌های PyQt، پردازش دوربین و
+مدیریت کانفیگ‌ها تعریف شده‌اند.
+"""
+
 import os
 import sys
 import json
 import cv2
 import mediapipe as mp
 import numpy as np
+
+# --------------------- ماژول‌های PyQt ---------------------
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QPushButton,
-    QHBoxLayout, QGroupBox, QGridLayout, QStyleFactory, QMessageBox, QSlider, QToolButton
+    QHBoxLayout, QGroupBox, QGridLayout, QStyleFactory, QMessageBox,
+    QSlider, QToolButton
 )
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QImage, QPixmap, QPalette, QColor, QIcon
 
+# --------------------- ماژول‌های شخصی ---------------------
 from modularV0.Hand.detector   import HandDetector
 from modularV0.Hand.processor  import HandProcessor
 from modularV0.Hand.model      import GestureModel
@@ -22,28 +31,14 @@ from modularV0.utils.Configurations import (
 )
 import modularV0.utils.Config_Loader as x
 
-# CONFIG_FILE = os.path.join(os.path.expanduser("~"), ".hand_gesture_app.json")
-CONFIG_FILE="x.json"
-# ------------- تنظیمات خوانده شده -----------------
-# try:
-#     with open(CONFIG_FILE, "r", encoding="utf-8") as fp:
-#         CONFIG = json.load(fp)
-# except Exception:
-#     # اگر فایل وجود نداشته باشد یا خراب باشد، از مقدار پیش‌فرض استفاده می‌کنیم
-#     CONFIG = {
-#         "max_hands": 2,
-#         "detection_conf": 0.5,
-#         "tracking_conf": 0.5,
-#         "FOLD_THRESHOLD": {
-#             "Thumb": 100,
-#             "Index": 40,
-#             "Middle": 40,
-#             "Ring": 40,
-#             "Pinky": 40
-#         }
-#     }
+# ---------------------------------------------------------
+# مسیر فایل تنظیمات (به‌جای متغیرهای ثابت می‌توانید این را به محیطی دیگر هم تغییر دهید)
+CONFIG_FILE = "x.json"
 
-
+# ----------------------------------------------------------------
+# بارگذاری تنظیمات اولیه (پیش‌فرض‌ها در صورت عدم وجود فایل)
+# ----------------------------------------------------------------
+cfg = x.load_config(CONFIG_FILE)
 
 
 cfg =x.load_config (CONFIG_FILE)
@@ -53,22 +48,23 @@ class CameraWidget(QLabel):
         super().__init__(parent)
         self.setAlignment(Qt.AlignCenter)
 
-        # --- باز کردن دوربین ---
+        # باز کردن دوربین
         self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             self.setText("❌ دوربین پیدا نشد")
             return
 
-        # --- تنظیمات اولیه ---
+        # پارامترهای اولیه تنظیمات تصویر
         self.brightness = 0
         self.contrast   = 0
         self.gamma      = 0
 
-        # --- تایمر فریم گرفتن ---
+        # تایمر برای دریافت فریم‌ها
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
-        self.timer.start(30)   # ~30fps
+        self.timer.start(30)   # تقریبا 30fps
 
+        # حافظه‌های برای اطلاعات دست (در این ویجت به‌صورت ساده استفاده نمی‌شوند)
         self.P_P_T_distances = {}
         self.hand_angles = {}
         self.finger_status = {}
@@ -76,19 +72,18 @@ class CameraWidget(QLabel):
         self.hand_wrist_ang = {}
 
     # ------------------------------------------------------------------
-    # ۱. فریم دریافت و تبدیل به QImage
+    # دریافت فریم، اعمال تنظیمات، تبدیل به QImage و نمایش در QLabel
     # ------------------------------------------------------------------
     def update_frame(self):
         ret, frame = self.cap.read()
         if not ret:
             return
 
-        # تبدیل BGR → RGB
+        # تبدیل از BGR به RGB
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         # اعمال brightness / contrast / gamma
         frame = cv2.convertScaleAbs(frame, alpha=self.contrast, beta=self.brightness)
-
         invGamma = 1.0 / self.gamma
         table = np.array([((i / 255.0) ** invGamma) * 255
                           for i in np.arange(256)]).astype("uint8")
@@ -104,7 +99,7 @@ class CameraWidget(QLabel):
         self.setPixmap(pix)
 
     # ------------------------------------------------------------------
-    # ۲. متدهای تنظیمات
+    # متدهای تنظیمات دوربین (کنتراست، روشنایی، گاما)
     # ------------------------------------------------------------------
     def set_brightness(self, v):
         self.brightness = v
@@ -115,34 +110,48 @@ class CameraWidget(QLabel):
     def set_gamma(self, v):
         self.gamma = v
 
+    # ------------------------------------------------------------------
+    # اطمینان از آزادسازی منابع دوربین در زمان بسته شدن ویجت
+    # ------------------------------------------------------------------
     def closeEvent(self, event):
         if self.cap.isOpened():
             self.cap.release()
         super().closeEvent(event)
 
-
+# ============================================================
+# ویجت پردازش دست (دوربین + MediaPipe + مدل‌های Gesture)
+# ============================================================
 class HandProcessorWidget(QLabel):
     """
-    ویجتی که تمام حلقه‌ی دست‌ها را درون خود می‌گیرد
-    و در هر فریم به صورت غیر مسدود کننده اجرا می‌شود.
+    این ویجت تمامی مراحل پردازش دست را در خود جای می‌دهد:
+    - خواندن فریم از دوربین
+    - تشخیص دست توسط MediaPipe
+    - محاسبه هندسه انگشتان
+    - طبقه‌بندی Gesture
+    - اجرای فرمان بر اساس Gesture
     """
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAlignment(Qt.AlignCenter)
 
-        # ----------- ضبط و تنظیمات دوربین -------------
+        # ------------------------------------------------------------------
+        # باز کردن دوربین و تنظیم پارامترهای رزولوشن
+        # ------------------------------------------------------------------
         self.cap = cv2.VideoCapture(CAMERA_ID)
         if not self.cap.isOpened():
             self.setText("❌ دوربین پیدا نشد")
             return
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
-        # --- تنظیمات اولیه ---
+
+        # تنظیمات اولیه تصویر
         self.brightness = 0
         self.contrast = 1.0
         self.gamma = 1.0
 
-        # ----------- آبجکت‌های پردازش ---------------
+        # ------------------------------------------------------------------
+        # ایجاد اشیای پردازش
+        # ------------------------------------------------------------------
         self.detector  = HandDetector(
             max_hands=cfg.max_hands,
             detection_conf=cfg.detection_conf,
@@ -152,126 +161,80 @@ class HandProcessorWidget(QLabel):
         self.model     = GestureModel(threshold=30)
         self.executor  = GestureExecutor()
 
-        # ----------- حافظهٔ وضعیت -------------
+        # حافظهٔ وضعیت (برای جلوگیری از فراخوانی مکرر دستور)
         self.last_gesture = {"Left": None, "Right": None}
 
-        # ----------- تایمر فریم -------------
+        # تایمر فریم
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
-        self.timer.start(50)  # ~30fps
+        self.timer.start(50)  # تقریباً 20fps
 
-    # def update_frame(self):
-    #     ret, frame = self.cap.read()
-    #     if not ret:
-    #         logger.error("Could not read frame from camera")
-    #
-    #
-    #     frame, hands = self.detector.process(frame)
-    #
-    #     # پردازش هر دست
-    #     for hand in hands:
-    #         lm = hand["landmarks"]
-    #         handedness = hand["handedness"]  # 'Left' یا 'Right'
-    #         # print(handedness)
-    #         # print(lm[0])
-    #         self.hand_angles[handedness] = ang = processor.Angele_Calculator(lm, frame)
-    #         self.P_P_T_distances[handedness] = processor.Distance_norm_Calculator(lm, frame)
-    #         # print(x)
-    #         self.finger_status[handedness] = stat = processor.Finger_Status(ang)
-    #         # print(y)
-    #
-    #         self.hand_gesture[handedness] = gesture = model.classify(stat, ang)
-    #         print(self.hand_gesture)
-    #         hand_wrist_ang = c = processor.Wrist_angel(lm, frame)
-    #         # print(c)
-    #
-    #         # جلوگیری از فراخوانی مکرر همان دستور
-    #
-    #         # نمایش درجه ها برای هر دست ارنج رو باید اضاف کنم
-    #         if handedness == "Left":
-    #             y0, dy = 30, 20
-    #         else:
-    #             y0, dy = 150, 20
-    #         for i, (finger, percent) in enumerate(ang.items()):
-    #             text = f"{finger.capitalize()}: {percent}"
-    #             y = y0 + i * dy
-    #             cv2.putText(frame, text, (10, y), cv2.FONT_HERSHEY_SIMPLEX,
-    #                         0.7, (0, 255, 255), 2)
-    #             if handedness == "Left":
-    #                 cv2.putText(frame, f"{handedness} Hand: {gesture}",
-    #                             (400, 80), cv2.FONT_HERSHEY_SIMPLEX,
-    #                             0.6, (0, 0, 0), 2)
-    #             else:
-    #                 cv2.putText(frame, f"{handedness} Hand: {gesture}",
-    #                             (400, 100), cv2.FONT_HERSHEY_SIMPLEX,
-    #                             0.6, (0, 0, 0), 2)
-    #
-    #
-    #     # ----------- نمایش فریم در QLabel ---------------------------
-    #     h, w, ch = frame.shape
-    #     bytesPerLine = ch * w
-    #     qImg = QImage(frame.data, w, h, bytesPerLine, QImage.Format_RGB888)
-    #     pix = QPixmap.fromImage(qImg).scaled(
-    #         self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-    #     self.setPixmap(pix)
+    # ------------------------------------------------------------------
+    # دریافت فریم، پردازش دست‌ها، نمایش، و اجرای فرمان‌ها
+    # ------------------------------------------------------------------
     def update_frame(self):
         ret, frame = self.cap.read()
         if not ret:
-            # اگر دوربین خاموش شود، نمایش خطا
             self.setText("❌ دریافت فریم از دوربین امکان‌پذیر نیست")
             return
 
-        # اپدیت کردن کانفیگ ها در هر حلقه
+        # به‌روزرسانی کانفیگ در هر حلقه (اگر فایل تنظیمات تغییر کرده باشد)
         cfg = x.load_config(CONFIG_FILE)
 
+        # تبدیل فریم به RGB
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         # اعمال brightness / contrast / gamma
         frame = cv2.convertScaleAbs(frame, alpha=self.contrast, beta=self.brightness)
-
         invGamma = 1.0 / self.gamma
         table = np.array([((i / 255.0) ** invGamma) * 255
                           for i in np.arange(256)]).astype("uint8")
         frame = cv2.LUT(frame, table)
-        # ---- پردازش دست‌ها ----
+
+        # ------------------------------------------------------------------
+        # تشخیص دست‌ها توسط MediaPipe
+        # ------------------------------------------------------------------
         frame, hands = self.detector.process(frame)
 
-        # حافظه‌های موقتی برای نمایش
+        # حافظه‌های موقتی برای نمایش (برای هر دست)
         hand_angles = {}
         hand_gesture = {}
         P_P_T_distances = {}
         finger_status = {}
         hand_wrist_ang = {}
 
-
-        #Update config + khode tasvir
+        # بروزرسانی تنظیمات (در صورت تغییر در فایل)
         self.processor.Config(x.load_config("x.json"))
         self.detector.Config(x.load_config("x.json"))
 
-
-        # --------------------- حلقهٔ دست‌ها ---------------------
+        # ------------------------------------------------------------------
+        # حلقه‌ی پردازش هر دست
+        # ------------------------------------------------------------------
         for hand in hands:
-            lm = hand["landmarks"]
-            # print(hands)
+            lm = hand["landmarks"]          # لیست نقاط (x, y, z)
             handedness = hand["handedness"]  # 'Left' یا 'Right'
 
-            # ۱. زاویه
+            # ۱. محاسبه زوایای انگشتان
             ang = self.processor.Angele_Calculator(lm, frame)
             hand_angles[handedness] = ang
 
-            # ۲. فاصله
+            # ۲. محاسبه فاصله‌های (Palm‑Palm، Palm‑Thumb و غیره)
             P_P_T_distances[handedness] = self.processor.Distance_norm_Calculator(lm, frame)
-            # print(P_P_T_distances)
-            # ۳. وضعیت انگشتان
+
+            # ۳. وضعیت (مفت یا بسته) هر انگشت
             finger_status[handedness] = stat = self.processor.Finger_Status(ang)
 
-            # ۴. گِیِست
-            hand_gesture[handedness] = gesture = self.model.classify(stat, ang,P_P_T_distances[handedness])
+            # ۴. طبقه‌بندی Gesture
+            hand_gesture[handedness] = gesture = self.model.classify(
+                stat, ang, P_P_T_distances[handedness]
+            )
 
             # ۵. زاویه‌ی آرنج (فقط برای نمایش)
             hand_wrist_ang[handedness] = self.processor.Wrist_angel(lm, frame)
 
-            # ----- نمایش متنی در فریم -----
+            # ------------------------------------------------------------------
+            # نمایش متنی بر روی فریم (زاویه انگشتان و Gesture)
+            # ------------------------------------------------------------------
             y0, dy = (30, 20) if handedness == "Left" else (150, 20)
             for i, (finger, percent) in enumerate(ang.items()):
                 text = f"{finger.capitalize()}: {percent}"
@@ -279,29 +242,35 @@ class HandProcessorWidget(QLabel):
                 cv2.putText(frame, text, (10, y), cv2.FONT_HERSHEY_SIMPLEX,
                             0.7, (0, 255, 255), 2)
 
-            # گِیِست روی فریم
             txt = f"{handedness} Hand: {gesture}"
             x_pos = 400
             y_pos = 80 if handedness == "Left" else 100
             cv2.putText(frame, txt, (x_pos, y_pos), cv2.FONT_HERSHEY_SIMPLEX,
                         0.6, (0, 0, 0), 2)
-        # ----------- فرمان‌دهی دست راست وقتی دست چپ مشت است -----------
-        if  hand_gesture.get('Left') and hand_gesture.get('Right'):
-            if   hand_gesture['Left'] == 'fist':
-                self.executor.execute_XMove_alt(hand_gesture.get('Right'),lm)
-                # self.executor.process_gesture(hand_gesture.get('Right'),lm)
-                self.last_gesture['Right'] = hand_gesture.get('Right')
-                print(lm[0])
 
-        # ----------- نمایش فریم در QLabel ---------------------------
+        # ------------------------------------------------------------------
+        # فرمان‌دهی: وقتی دست چپ مشت است، دست راست را کنترل می‌کند
+        # ------------------------------------------------------------------
+        if hand_gesture.get('Left') and hand_gesture.get('Right'):
+            if hand_gesture['Left'] == 'fist':
+                # ارسال فرمان به سمت راست (شما می‌توانید متد را تغییر دهید)
+                self.executor.execute_XMove_alt(hand_gesture.get('Right'), lm)
+                self.last_gesture['Right'] = hand_gesture.get('Right')
+                print(lm[0])  # نقطه‌ی اول (به‌عنوان نمونه)
+
+        # ------------------------------------------------------------------
+        # تبدیل فریم به QImage و نمایش در QLabel
+        # ------------------------------------------------------------------
         h, w, ch = frame.shape
         bytesPerLine = ch * w
         qImg = QImage(frame.data, w, h, bytesPerLine, QImage.Format_RGB888)
         pix = QPixmap.fromImage(qImg).scaled(
             self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.setPixmap(pix)
-        # print (cfg.FOLD_THRESHOLD)
 
+    # ------------------------------------------------------------------
+    # متدهای تنظیمات (brightness، contrast، gamma)
+    # ------------------------------------------------------------------
     def set_brightness(self, v):
         self.brightness = v
 
@@ -311,13 +280,13 @@ class HandProcessorWidget(QLabel):
     def set_gamma(self, v):
         self.gamma = v
 
-
+    # ------------------------------------------------------------------
+    # آزادسازی منابع در هنگام بسته شدن
+    # ------------------------------------------------------------------
     def closeEvent(self, event):
         if self.cap.isOpened():
             self.cap.release()
         super().closeEvent(event)
-
-
 
 # ------------------------------------------------------------------
 # ۳. MainWindow
