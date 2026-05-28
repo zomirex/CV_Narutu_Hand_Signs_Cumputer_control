@@ -46,7 +46,7 @@ class SettingsDialog(QDialog):
         """
         super().__init__(parent)
         self.setWindowTitle("تنظیمات")
-        self.setMinimumWidth(420)
+        self.setMinimumWidth(300)
 
         # ------------------------------------------------------------------
         # 1️⃣ فیلدهای عددی اولیه

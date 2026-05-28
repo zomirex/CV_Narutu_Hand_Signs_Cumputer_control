@@ -28,7 +28,7 @@ class GestureModel:
         """
         self.threshold = threshold
         # مرزی برای تشخیص «pinch» بر اساس فاصله‌ی Thumb‑Index
-        self.Touch = 0.5
+        self.Touch = 0.5 # اینو هم باید از config data بگیره
 
     def classify(self, Finger_status, Finger_ang, Finger_Dist):
         """

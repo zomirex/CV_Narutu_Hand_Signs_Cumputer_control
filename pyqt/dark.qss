@@ -1,0 +1,115 @@
+/* ------------------------------------------------------------------
+   1. کل پنجره – رنگ پس‌زمینه و فونت
+------------------------------------------------------------------ */
+QWidget#MainWindow                     /*  objectName در MainWindow() باید تنظیم شود  */
+{
+    background-color: #1e1e2e;        /*  dark‑theme   */
+    color: #e0e0e0;
+    font-family: "Noto Sans","Arial",sans-serif;
+    font-size: 14px;
+}
+
+/* ------------------------------------------------------------------
+   2. نوار بالای پنجره (کلاس QToolButton که دکمه‌ی “تغییر تم” است)
+------------------------------------------------------------------ */
+QToolButton#themeBtn
+{
+    background: transparent;
+    border: none;
+    color: #e0e0e0;
+    padding: 6px 12px;
+    font-weight: 500;
+}
+QToolButton#themeBtn:hover
+{
+    background: rgba(255,255,255,0.08);
+}
+QToolButton#themeBtn:checked
+{
+    background: rgba(255,255,255,0.12);
+}
+
+
+/* ------------------------------------------------------------------
+   4. پنل تنظیمات – QGroupBox
+------------------------------------------------------------------ */
+QGroupBox
+{
+    border: 1px solid #444444;
+    border-radius: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    background: #232323;
+}
+QGroupBox::title
+{
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 5px;
+    color: #bbbbbb;
+    font-weight: 600;
+}
+QGroupBox:hover
+{
+    border-color: #5a5a5a;
+}
+
+/* ------------------------------------------------------------------
+   5. اسلایدرها (Brightness / Contrast / Gamma)
+------------------------------------------------------------------ */
+QSlider::groove:horizontal
+{
+    height: 6px;
+    background: #444444;
+    border-radius: 3px;
+}
+QSlider::handle:horizontal
+{
+    width: 14px;
+    height: 14px;
+    margin: -4px 0; /*  مرکز  */
+    background: #5a5a5a;
+    border-radius: 7px;
+}
+QSlider::handle:horizontal:hover
+{
+    background: #7a7a7a;
+}
+
+/* ------------------------------------------------------------------
+   6. دکمه‌ی تنظیمات (QPushButton “تنظیمات”)
+------------------------------------------------------------------ */
+QPushButton
+{
+    background: #3c3c3c;
+    border: none;
+    color: #e0e0e0;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+QPushButton:hover
+{
+    background: #4d4d4d;
+}
+
+/* ------------------------------------------------------------------
+   7. پیغام‌های QMessageBox
+------------------------------------------------------------------ */
+QMessageBox
+{
+    background: #2e2e2e;
+    color: #e0e0e0;
+}
+QMessageBox QPushButton
+{
+    background: #3c3c3c;
+    border: none;
+    color: #e0e0e0;
+    padding: 6px 12px;
+    border-radius: 5px;
+}
+QMessageBox QPushButton:hover
+{
+    background: #4d4d4d;
+}

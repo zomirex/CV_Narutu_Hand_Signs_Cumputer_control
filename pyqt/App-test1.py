@@ -15,7 +15,7 @@ import numpy as np
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QPushButton,
     QHBoxLayout, QGroupBox, QGridLayout, QStyleFactory, QMessageBox,
-    QSlider, QToolButton
+    QSlider, QToolButton, QSizePolicy
 )
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QImage, QPixmap, QPalette, QColor, QIcon
@@ -294,8 +294,11 @@ class HandProcessorWidget(QLabel):
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Hand Gesture CV")
-        self.resize(900, 600)
+        self.setWindowTitle("Computer Controller")
+        self.resize(400, 600)
+        self.setAutoFillBackground(True)
+        # self.setWindowFlags(Qt.tit | Qt.Window)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
 
         # ----------- سبک Fusion -----------------
         QApplication.setStyle(QStyleFactory.create('Fusion'))
@@ -307,11 +310,12 @@ class MainWindow(QWidget):
         # self.settings_panel = SettingsPanel(self.cam_widget, self)
         self.settings_panel = SettingsPanel(self.hand_widget, self)
 
+
         # ---- دکمه تعویض تم ----
         self.theme_btn = QToolButton()
         self.theme_btn.setText("تغییر تم")
-        self.theme_btn.setToolTip("تغییر رنگ (آتش یا تاریکی)")
-        self.theme_btn.setIcon(QIcon.fromTheme("weather-clear-night"))  # آیکون اختیاری
+        self.theme_btn.setToolTip("تغییر رنگ (روشن یا دارک)")
+        self.theme_btn.setIcon(QIcon.fromTheme("weather-clear-night"))
         self.theme_btn.setCheckable(True)
         self.theme_btn.setChecked(cfg.theme == "dark")
         self.theme_btn.toggled.connect(self.toggle_theme)
@@ -334,6 +338,12 @@ class MainWindow(QWidget):
         top_bar.addStretch()
         top_bar.addWidget(self.theme_btn)
 
+        # self.hand_widget.setSizePolicy(
+        #     QSizePolicy.Preferred,  # horizontal:  Preferred (یا Fixed)
+        #     QSizePolicy.Fixed  # vertical:  Fixed
+        # )
+        # self.hand_widget.setFixedSize(640,480)
+
 
         layout = QVBoxLayout()
         # layout.addWidget(self.cam_widget, stretch=3)
@@ -346,6 +356,8 @@ class MainWindow(QWidget):
         btn_layout.addStretch()
         layout.addLayout(btn_layout)
         layout.addWidget(self.settings_panel)
+
+
 
         self.setLayout(layout)
 
@@ -427,7 +439,6 @@ class SettingsPanel(QGroupBox):
 # ۴. اجرای برنامه
 # ------------------------------------------------------------------
 
-
 def set_light_palette(app):
     pal = QPalette()
     pal.setColor(QPalette.Window, QColor("#ffffff"))
@@ -444,6 +455,7 @@ def set_light_palette(app):
     pal.setColor(QPalette.Highlight, QColor("#4a90e2"))
     pal.setColor(QPalette.HighlightedText, Qt.white)
     app.setPalette(pal)
+
 
 def set_dark_palette(app):
     pal = QPalette()
@@ -462,14 +474,18 @@ def set_dark_palette(app):
     pal.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(pal)
 
+
 def apply_theme(app, theme_name):
     if theme_name == "light":
-        set_light_palette(app)
+        with open('light.qss', 'r', encoding='utf-8') as f:
+            app.setStyleSheet(f.read())
+            set_light_palette(app)
     else:
-        set_dark_palette(app)
+        with open('dark.qss', 'r', encoding='utf-8') as f:
+            app.setStyleSheet(f.read())
+            set_dark_palette(app)
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    apply_theme(app,'dark')        # یا set_light_theme(app)
     win = MainWindow()
     win.show()
     sys.exit(app.exec_())

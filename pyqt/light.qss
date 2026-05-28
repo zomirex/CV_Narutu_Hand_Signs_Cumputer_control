@@ -1,0 +1,80 @@
+/* ====================== 1. کل پنجره  ====================== */
+QWidget#MainWindow {                  /* objectName را در MainWindow() تنظیم کنید */
+    background-color: #f9f9f9;         /* پس‌زمینه‌ی سفید روشن */
+    color: #222222;                    /* متن خاکستری تیره */
+    font-family: "Noto Sans","Arial",sans-serif;
+    font-size: 14px;
+}
+
+/* ====================== 2. نوار بالای پنجره  ====================== */
+QToolButton#themeBtn {                 /* دکمه تغییر تم */
+    background: transparent;
+    border: none;
+    color: #222222;
+    padding: 6px 12px;
+    font-weight: 500;
+}
+QToolButton#themeBtn:hover {           /* افکت hover */
+    background: rgba(0,0,0,0.04);
+}
+QToolButton#themeBtn:checked {         /* حالت چک‌شده (تم تاریک) */
+    background: rgba(0,0,0,0.08);
+}
+
+
+
+/* ====================== 4. پنل تنظیمات (QGroupBox)  ====================== */
+QGroupBox {
+    border: 1px solid #d0d0d0;
+    border-radius: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    background: #f5f5f5;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 5px;
+    color: #555555;
+    font-weight: 600;
+}
+QGroupBox:hover { border-color: #b0b0b0; }
+
+/* ====================== 5. اسلایدرها  ====================== */
+QSlider::groove:horizontal {
+    height: 6px;
+    background: #dddddd;
+    border-radius: 3px;
+}
+QSlider::handle:horizontal {
+    width: 14px; height: 14px;
+    margin: -4px 0;
+    background: #bbbbbb;
+    border-radius: 7px;
+}
+QSlider::handle:horizontal:hover { background: #999999; }
+
+/* ====================== 6. دکمه‌های کلی  ====================== */
+QPushButton {
+    background: #e0e0e0;
+    border: none;
+    color: #222222;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+QPushButton:hover { background: #d0d0d0; }
+
+/* ====================== 7. QMessageBox  ====================== */
+QMessageBox {
+    background: #ffffff;
+    color: #222222;
+}
+QMessageBox QPushButton {
+    background: #e0e0e0;
+    border: none;
+    color: #222222;
+    padding: 6px 12px;
+    border-radius: 5px;
+}
+QMessageBox QPushButton:hover { background: #d0d0d0; }
