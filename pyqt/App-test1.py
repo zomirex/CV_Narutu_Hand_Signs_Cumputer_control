@@ -158,7 +158,7 @@ class HandProcessorWidget(QLabel):
             tracking_conf=cfg.tracking_conf
         )
         self.processor = HandProcessor()
-        self.model     = GestureModel(threshold=30)
+        self.model     = GestureModel()
         self.executor  = GestureExecutor()
 
         # حافظهٔ وضعیت (برای جلوگیری از فراخوانی مکرر دستور)

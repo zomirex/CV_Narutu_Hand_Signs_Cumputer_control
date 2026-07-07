@@ -1,0 +1,34 @@
+[
+  {
+    "name": "open_palm",
+    "fingers": {
+      "Thumb": "Extended",
+      "Index": "Extended",
+      "Middle": "Extended",
+      "Ring": "Extended",
+      "Pinky": "Extended"
+    }
+  },
+
+  {
+    "name": "fist",
+    "fingers": {
+      "Thumb": "Folded",
+      "Index": "Folded",
+      "Middle": "Folded",
+      "Ring": "Folded",
+      "Pinky": "Folded"
+    }
+  },
+
+  {
+    "name": "pinch",
+    "fingers": {
+      "Thumb": "Extended",
+      "Index": "Extended"
+    },
+    "distance": {
+      "Thumb-Index": 0.5
+    }
+  }
+]

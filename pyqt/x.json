@@ -1,0 +1,13 @@
+{
+    "max_hands": 2,
+    "detection_conf": 0.7,
+    "tracking_conf": 0.55,
+    "FOLD_THRESHOLD": {
+        "Thumb": 100,
+        "Index": 60,
+        "Middle": 67,
+        "Ring": 60,
+        "Pinky": 59
+    },
+    "theme": "dark"
+}
